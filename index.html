@@ -121,6 +121,45 @@
         alert('拍照失敗');
       });
     });
+
+    // 開始錄影
+    var recorder = null;
+    var chunks = [];
+
+    $(document).on('click', '#StartRecordButton', function () {
+      const canvas = $('#PreviewBox canvas')[0];
+      const stream = canvas.captureStream();
+
+      recorder = new MediaRecorder(stream, {
+        audioBitsPerSecond: 64000,
+        videoBitsPerSecond: 400000,
+      });
+
+      recorder.addEventListener('dataavailable', function (e) {
+        chunks.push(e.data);
+      });
+
+      recorder.addEventListener('stop', function (e) {
+        const blob = new Blob(chunks, { type: chunks[0].type });
+        const url = URL.createObjectURL(blob);
+        console.log(url);
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'videoinput_record';
+        link.click();
+      });
+
+      chunks = [];
+      recorder.start();
+      alert('開始錄影');
+    });
+
+    // 停止錄影
+    $(document).on('click', '#StopRecordButton', function () {
+      recorder.stop();
+      alert('停止錄影');
+    });
   </script>
   <style>
     body {
@@ -172,6 +211,8 @@
       <option value=".tif">TIFF</option>
     </select>
     <button id="GrabButton">拍照</button>
+    <button id="StartRecordButton">開始錄影</button>
+    <button id="StopRecordButton">停止錄影</button>
   </div>
   <br>
   <div>
